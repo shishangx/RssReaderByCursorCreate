@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ article.title }}</h1>
+        </header>
+        <nav class="breadcrumb">
+            <a href="{{ url_for('index') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to feeds</a>
+        </nav>
+        <div class="article-meta">
+            <span class="published-date"><i class="fas fa-calendar-alt"></i> Published: {{ article.published }}</span>
+        </div>
+
+        {% if article.summary %}
+        <section class="article-summary">
+            <h2>Summary</h2>
+            <p>{{ article.summary }}</p>
+        </section>
+        {% endif %}
+
+        <section class="article-content">
+            <h2>Full Content</h2>
+            <div class="formatted-content">
+                {{ content | safe }}
+            </div>
+        </section>
+
+        <footer>
+            <a href="{{ article.link }}" target="_blank" class="read-original"><i class="fas fa-external-link-alt"></i> Read original article</a>
+        </footer>
+    </div>
+</body>
+</html>

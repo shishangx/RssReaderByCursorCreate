@@ -1,0 +1,10 @@
+version: '3'
+services:
+  rss_reader:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./rss_reader.db:/app/rss_reader.db
+    environment:
+      - FLASK_ENV=production

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSS Reader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    <style>
+        .refresh-all-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .refresh-all-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-rss"></i> RSS Reader</h1>
+        </header>
+
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="messages">
+                    {% for category, message in messages %}
+                        <div class="message {{ category }}">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="add-feed">
+                <h2><i class="fas fa-plus-circle"></i> Add New RSS Feed</h2>
+                <form action="{{ url_for('add_feed') }}" method="post">
+                    <input type="url" name="url" placeholder="Enter RSS feed URL" required>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="verify_ssl" checked>
+                        <span>Verify SSL Certificate</span>
+                    </label>
+                    <button type="submit"><i class="fas fa-plus"></i> Add Feed</button>
+                </form>
+            </section>
+
+            <section class="feed-list">
+                <h2><i class="fas fa-list"></i> Your RSS Feeds</h2>
+                {% if feeds %}
+                    <form action="{{ url_for('refresh_feed', feed_id='all') }}" method="post">
+                        <button type="submit" class="refresh-all-btn"><i class="fas fa-sync"></i> Refresh All Feeds</button>
+                    </form>
+                    <form id="delete-feeds-form" action="{{ url_for('delete_feeds') }}" method="post">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all"></th>
+                                    <th>Feed Title</th>
+                                    <th>SSL</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for feed_id, feed in feeds.items() %}
+                                <tr>
+                                    <td><input type="checkbox" name="feed_ids" value="{{ feed_id }}" class="feed-checkbox"></td>
+                                    <td><a href="{{ url_for('show_feed', feed_id=feed_id) }}" class="feed-title">{{ feed.title }}</a></td>
+                                    <td class="ssl-status">{{ "On" if feed.verify_ssl else "Off" }}</td>
+                                    <td class="feed-actions">
+                                        <a href="{{ url_for('edit_feed', feed_id=feed_id) }}" class="edit-btn"><i class="fas fa-edit"></i> Edit</a>
+                                        <form action="{{ url_for('refresh_feed', feed_id=feed_id) }}" method="post" style="display: inline;">
+                                            <button type="submit" class="refresh-btn"><i class="fas fa-sync"></i> Refresh</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <button type="submit" id="delete-selected" class="delete-btn"><i class="fas fa-trash"></i> Delete Selected</button>
+                    </form>
+                {% else %}
+                    <p class="no-feeds"><i class="fas fa-info-circle"></i> No feeds added yet.</p>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.feed-checkbox');
+            const deleteButton = document.getElementById('delete-selected');
+            const selectAll = document.getElementById('select-all');
+
+            function updateDeleteButton() {
+                const checkedBoxes = document.querySelectorAll('.feed-checkbox:checked');
+                deleteButton.style.display = checkedBoxes.length > 0 ? 'inline-block' : 'none';
+            }
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateDeleteButton);
+            });
+
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateDeleteButton();
+            });
+
+            updateDeleteButton();
+        });
+    </script>
+</body>
+</html>
